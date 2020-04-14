@@ -45,6 +45,12 @@ public class DatabaseCommand {
         return null;
     }
 
+    public static void deletePassword(String name) throws SQLException {
+        Statement statement = connection.createStatement();
+        String query = "DELETE FROM passwords WHERE name = '" + name + "'";
+        statement.executeUpdate(query);
+    }
+
     public static void printCurrentTables() throws SQLException {
         // print tables
         ResultSet rs = connection.getMetaData().getTables(null, null, "%", null);

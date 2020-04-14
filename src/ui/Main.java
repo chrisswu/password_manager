@@ -49,10 +49,7 @@ public class Main extends Application {
 
         // sign in
         Button signInBtn = new Button("Sign in");
-        HBox hbBtn = new HBox(10);
-        hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
-        hbBtn.getChildren().add(signInBtn);
-        grid.add(hbBtn, 1, 4);
+        grid.add(signInBtn, 1, 4);
 
         final Text actiontarget = new Text();
         grid.add(actiontarget, 1, 3);
@@ -79,7 +76,7 @@ public class Main extends Application {
                 @Override
                 public void handle(ActionEvent e) {
                     Stage primaryStage = (Stage) changePwBtn.getScene().getWindow();
-                    primaryStage.setScene(pwManagerScreen());
+                    primaryStage.setScene(changeMasterPasswordScreen());
                 }
             });
         } else {
@@ -90,7 +87,7 @@ public class Main extends Application {
                 @Override
                 public void handle(ActionEvent e) {
                     Stage primaryStage = (Stage) setPwBtn.getScene().getWindow();
-                    primaryStage.setScene(pwManagerScreen());
+                    primaryStage.setScene(setMasterPasswordScreen());
                 }
             });
         }
@@ -203,17 +200,18 @@ public class Main extends Application {
         searchBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-
-                Dialog dialog = pwInputDialog();
-                Optional<String> result = dialog.showAndWait();
-                result.ifPresent(password -> {
-                    if (pwManager.retrievePassword(password, nameBox.getText()) == null) {
-                        actiontarget.setText("The account name you entered does not exist.");
-                    } else {
-                        actiontarget.setText(pwManager.retrievePassword(password, nameBox.getText()));
-                    }
-                });
-                nameBox.clear();
+                if (nameBox.getText() != "") {
+                    Dialog dialog = pwInputDialog();
+                    Optional<String> result = dialog.showAndWait();
+                    result.ifPresent(password -> {
+                        if (pwManager.retrievePassword(password, nameBox.getText()) == null) {
+                            actiontarget.setText("The account name you entered does not exist.");
+                        } else {
+                            actiontarget.setText(pwManager.retrievePassword(password, nameBox.getText()));
+                        }
+                    });
+                    nameBox.clear();
+                }
             }
         });
 
@@ -225,6 +223,17 @@ public class Main extends Application {
             public void handle(ActionEvent actionEvent) {
                 Stage primaryStage = (Stage) addPwdBtn.getScene().getWindow();
                 primaryStage.setScene(addPasswordScreen());
+            }
+        });
+
+        Button dltPwdBtn = new Button("Delete account");
+        grid.add(dltPwdBtn, 0,5);
+
+        dltPwdBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                Stage primaryStage = (Stage) dltPwdBtn.getScene().getWindow();
+                primaryStage.setScene(deletePasswordScreen());
             }
         });
         return scene;
@@ -281,8 +290,54 @@ public class Main extends Application {
                 primaryStage.setScene(pwManagerScreen());
             }
         });
+        return scene;
+    }
 
+    public Scene deletePasswordScreen() {
+        GridPane grid = new GridPane();
+        grid.setAlignment(Pos.CENTER);
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(25, 25, 25, 25));
 
+        Scene scene = new Scene(grid, 500, 500);
+
+        Label name = new Label("Name of account:");
+        grid.add(name, 0, 2);
+        TextField nameBox = new TextField();
+        grid.add(nameBox, 1, 2);
+
+        Label masterPassword = new Label("Master Password:");
+        grid.add(masterPassword, 0, 3);
+        PasswordField masterPasswordBox = new PasswordField();
+        grid.add(masterPasswordBox, 1, 3);
+
+        Button confirmBtn = new Button("Confirm");
+        grid.add(confirmBtn, 1, 5);
+
+        final Text actionTarget = new Text();
+        grid.add(actionTarget, 1, 4);
+
+        confirmBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                actionTarget.setText(
+                        pwManager.deletePassword(masterPasswordBox.getText(), nameBox.getText())
+                );
+                nameBox.clear();
+                masterPasswordBox.clear();
+            }
+        });
+
+        Button backBtn = new Button("Back");
+        grid.add(backBtn, 0, 6);
+        backBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                Stage primaryStage = (Stage) backBtn.getScene().getWindow();
+                primaryStage.setScene(pwManagerScreen());
+            }
+        });
         return scene;
     }
 
@@ -309,7 +364,7 @@ public class Main extends Application {
     }
 
     // idk about this function
-    public Scene changeMasterPassword() {
+    public Scene changeMasterPasswordScreen() {
         GridPane grid = new GridPane();
         grid.setAlignment(Pos.CENTER);
         grid.setHgap(10);
@@ -318,30 +373,52 @@ public class Main extends Application {
 
         Scene scene = new Scene(grid, 500, 500);
 
-        Text text = new Text();
-        text.setText("Enter master password");
-        grid.add(text, 0, 0);
+        Label master = new Label("New master password:");
+        grid.add(master, 0, 2);
+        PasswordField masterBox = new PasswordField();
+        grid.add(masterBox, 1, 2);
 
-        Label pw = new Label("Password:");
-        grid.add(pw, 0, 1);
-        PasswordField pwBox = new PasswordField();
-        grid.add(pwBox, 1, 1);
+        Label reMaster = new Label("Re-enter:");
+        grid.add(reMaster, 0, 3);
+        PasswordField reMasterBox = new PasswordField();
+        grid.add(reMasterBox, 1, 3);
 
-        Button btn = new Button("Confirm");
-        HBox hbBtn = new HBox(10);
-        hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
-        hbBtn.getChildren().add(btn);
-        grid.add(hbBtn, 1, 4);
+        Label masterPassword = new Label("Current master password:");
+        grid.add(masterPassword, 0, 4);
+        PasswordField masterPasswordBox = new PasswordField();
+        grid.add(masterPasswordBox, 1, 4);
+
+        Button confirmBtn = new Button("Confirm");
+        grid.add(confirmBtn, 1, 6);
 
         final Text actiontarget = new Text();
-        grid.add(actiontarget, 1, 6);
+        grid.add(actiontarget, 1, 5);
 
-        btn.setOnAction(new EventHandler<ActionEvent>() {
+        Button backBtn = new Button("Back");
+        grid.add(backBtn, 0, 6);
+        backBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                Stage primaryStage = (Stage) backBtn.getScene().getWindow();
+                primaryStage.setScene(loginScreen());
+            }
+        });
+
+        confirmBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
-                if (pwManager.checkMasterPassword(pwBox.getText())) {
-                    actiontarget.setFill(Color.GREEN);
-                    actiontarget.setText("You may now change your master password");
+                if (pwManager.checkMasterPassword(masterPasswordBox.getText())) {
+                    if (pwManager.checkString(masterBox.getText()) && masterBox.getText().equals(reMasterBox.getText())) {
+                        pwManager.addMasterPassword(masterBox.getText());
+                        actiontarget.setFill(Color.GREEN);
+                        actiontarget.setText("Successfully changed master password.");
+                        Stage primaryStage = (Stage) confirmBtn.getScene().getWindow();
+                        primaryStage.setScene(loginScreen());
+
+                    } else {
+                        actiontarget.setFill(Color.FIREBRICK);
+                        actiontarget.setText("Password do not match or do not meet requirements.");
+                    }
                 } else {
                     actiontarget.setFill(Color.FIREBRICK);
                     actiontarget.setText("Master password incorrect");

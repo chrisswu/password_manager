@@ -26,8 +26,10 @@ public class PasswordManagerTest {
 
     @After
     public void clean() {
-        File file = new File("resources/database.db");
-        file.delete();
+        File file1 = new File("resources/database.db");
+        file1.delete();
+        File file2 = new File("resources/master.txt");
+        file2.delete();
     }
 
     @Test
@@ -125,5 +127,12 @@ public class PasswordManagerTest {
         assertFalse(pwManager.checkString("Hello1234"));
         assertFalse(pwManager.checkString("Hd3#"));
         assertFalse(pwManager.checkString("asdfghjkl"));
+    }
+
+    @Test
+    public void deletePasswordTest() {
+        pwManager.addMasterPassword("MasterPassword");
+        pwManager.addPassword("MasterPassword", "Gmail", "GmailPassword");
+        assertTrue(pwManager.deletePassword("MasterPassword", "Gmail").equals("Successfully deleted"));
     }
 }

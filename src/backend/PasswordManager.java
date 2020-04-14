@@ -61,6 +61,27 @@ public class PasswordManager {
         return null;
     }
 
+    public String deletePassword(String masterPassword, String name) {
+        if (checkMasterPassword(masterPassword)) {
+            Connection connection = DatabaseConnection.getConnection();
+            DatabaseCommand dbCommand = new DatabaseCommand(connection);
+            if (dbCommand.checkAlreadyExist(name)) {
+                try { dbCommand.deletePassword(name); } catch (SQLException e) {}
+                if (!dbCommand.checkAlreadyExist(name)) {
+                    System.out.println("HERE");
+                    return "Successfully deleted";
+                } else {
+                    System.out.println("HERE");
+                    return "Error occurred while deleting";
+                }
+            } else {
+                return "Account does not exist";
+            }
+        } else {
+            return "Incorrect master password";
+        }
+    }
+
     // TODO: Master password specifications: 8-20 characters, Upper, Special
     // Special: !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
     public static void addMasterPassword(String masterPassword) {
@@ -74,8 +95,12 @@ public class PasswordManager {
     public static boolean checkMasterPassword(String masterPassword) {
         try {
             File file = new File("resources/master.txt");
-            BufferedReader reader = new BufferedReader(new FileReader("resources/master.txt"));
-            return PasswordHash.checkPassword(masterPassword, reader.readLine());
+            if (file.exists()) {
+                BufferedReader reader = new BufferedReader(new FileReader("resources/master.txt"));
+                return PasswordHash.checkPassword(masterPassword, reader.readLine());
+            } else {
+                return false;
+            }
         } catch (Exception e) {}
         return false;
     }
